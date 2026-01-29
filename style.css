@@ -395,6 +395,7 @@ body.is-resizing::before
 .choice-btn{
   font-size: 16px;
   padding: 12px 14px 12px 40px;
+  line-height: 1.28;
 }
 .choice-btn::before{ left: 15px; }
 
@@ -416,6 +417,7 @@ body.is-resizing::before
   content: "🔇";
   font-size: 18px;
   line-height: 1;
+  margin-left: 4px;
 }
 #soundToggle[aria-pressed="true"]::before{
   content: "🔈";

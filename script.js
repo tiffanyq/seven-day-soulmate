@@ -95,6 +95,9 @@ const audioState = {
   bgmEls: {},
   currentBgmKey: null,
   currentBgmEl: null,
+  ctx: null,
+  sfxBuffers: {},
+  sfxGains: {}
 };
 
 const THEME_CLASSES = ["theme-main", "theme-riley", "theme-robin", "theme-river", "theme-rory", "theme-ronnie"];
@@ -388,20 +391,21 @@ function audioMix() {
 
 function primeAudioFromGesture() {
   if (!audioState.enabled) return;
-  if (audioState.ready) return;
 
+  if (audioState.ready) {
+    try { audioState.ctx?.resume?.(); } catch (_) {}
+    return;
+  }
   audioState.ready = true;
   const mix = audioMix();
   audioState.bgmBaseVolume = mix.bgmBaseVolume;
   audioState.bgmDuckFactor = mix.bgmDuckFactor;
   audioState.choiceSfxVolume = mix.choiceSfxVolume;
 
-  // Click SFX
   audioState.clickEl = new Audio(AUDIO_FILES.click);
   audioState.clickEl.preload = "auto";
   audioState.clickEl.volume = mix.clickVolume;
 
-  // Choice SFX (louder than BGM)
   audioState.happyEl = new Audio(AUDIO_FILES.happy);
   audioState.happyEl.preload = "auto";
   audioState.happyEl.volume = audioState.choiceSfxVolume;
@@ -410,7 +414,6 @@ function primeAudioFromGesture() {
   audioState.sadEl.preload = "auto";
   audioState.sadEl.volume = audioState.choiceSfxVolume;
 
-  // Random event + journal SFX
   audioState.randomEventEl = new Audio(AUDIO_FILES.random_event);
   audioState.randomEventEl.preload = "auto";
   audioState.randomEventEl.volume = audioState.choiceSfxVolume;
@@ -419,17 +422,14 @@ function primeAudioFromGesture() {
   audioState.journalEl.preload = "auto";
   audioState.journalEl.volume = audioState.choiceSfxVolume;
 
-  // Day start SFX
   audioState.dayEl = new Audio(AUDIO_FILES.day);
   audioState.dayEl.preload = "auto";
   audioState.dayEl.volume = mix.dayVolume;
 
-  // Ending / finale SFX
   audioState.finaleEl = new Audio(AUDIO_FILES.finale);
   audioState.finaleEl.preload = "auto";
   audioState.finaleEl.volume = mix.finaleVolume;
 
-  // Finale choice (tone-based) SFX
   audioState.finalChoiceHappyEl = new Audio(AUDIO_FILES.finale_choice_happy);
   audioState.finalChoiceHappyEl.preload = "auto";
   audioState.finalChoiceHappyEl.volume = audioState.choiceSfxVolume;
@@ -438,7 +438,50 @@ function primeAudioFromGesture() {
   audioState.finalChoiceWistfulEl.preload = "auto";
   audioState.finalChoiceWistfulEl.volume = audioState.choiceSfxVolume;
 
-  // BGM tracks
+  try {
+    const Ctx = window.AudioContext || window.webkitAudioContext;
+    audioState.ctx = new Ctx();
+
+    const MOBILE_SFX_BOOST =
+      /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) ? 1.8 : 1.0;
+
+    audioState.sfxBuffers = {};
+    audioState.sfxGains = {};
+
+    const sfxList = {
+      click: { url: AUDIO_FILES.click, gain: mix.clickVolume * MOBILE_SFX_BOOST },
+      happy: { url: AUDIO_FILES.happy, gain: audioState.choiceSfxVolume * MOBILE_SFX_BOOST },
+      sad: { url: AUDIO_FILES.sad, gain: audioState.choiceSfxVolume * MOBILE_SFX_BOOST },
+      random_event: { url: AUDIO_FILES.random_event, gain: audioState.choiceSfxVolume * MOBILE_SFX_BOOST },
+      journal: { url: AUDIO_FILES.journal, gain: audioState.choiceSfxVolume * MOBILE_SFX_BOOST },
+      day: { url: AUDIO_FILES.day, gain: mix.dayVolume * MOBILE_SFX_BOOST },
+      finale: { url: AUDIO_FILES.finale, gain: mix.finaleVolume * MOBILE_SFX_BOOST },
+      finale_choice_happy: { url: AUDIO_FILES.finale_choice_happy, gain: audioState.choiceSfxVolume * MOBILE_SFX_BOOST },
+      finale_choice_wistful: { url: AUDIO_FILES.finale_choice_wistful, gain: audioState.choiceSfxVolume * MOBILE_SFX_BOOST },
+    };
+
+    for (const key of Object.keys(sfxList)) {
+      const g = audioState.ctx.createGain();
+      g.gain.value = sfxList[key].gain;
+      g.connect(audioState.ctx.destination);
+      audioState.sfxGains[key] = g;
+    }
+
+    (async () => {
+      try { await audioState.ctx.resume(); } catch (_) {}
+
+      for (const [key, meta] of Object.entries(sfxList)) {
+        try {
+          const res = await fetch(meta.url);
+          const arr = await res.arrayBuffer();
+          const buf = await audioState.ctx.decodeAudioData(arr);
+          audioState.sfxBuffers[key] = buf;
+        } catch (e) {
+        }
+      }
+    })();
+  } catch (e) {
+  }
   ["main", "riley", "robin", "river", "rory", "ronnie"].forEach((k) => {
     const a = new Audio(AUDIO_FILES[k]);
     a.loop = true;
@@ -451,7 +494,23 @@ function primeAudioFromGesture() {
 }
 
 function playClick() {
-  if (!audioState.ready || !audioState.enabled) return;
+  if (!audioState.enabled) return;
+  const ctx = audioState.ctx;
+  const buf = audioState.sfxBuffers?.click;
+  const gain = audioState.sfxGains?.click;
+
+  if (ctx && buf && gain) {
+    try {
+      ctx.resume?.();
+      const src = ctx.createBufferSource();
+      src.buffer = buf;
+      src.connect(gain);
+      src.start(0);
+      return;
+    } catch (_) {
+    }
+  }
+  if (!audioState.ready) return;
   const a = audioState.clickEl;
   if (!a) return;
   try {
