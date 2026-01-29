@@ -25,6 +25,20 @@ const IMG = {
   journal: "img/journal.png"
 };
 
+const ALT = {
+  horse: "A purple horse in rolling green fields, with mountains in the background, on a slightly sunny day.",
+  horse_evening: "A purple horse in rolling green fields, with mountains in the background, at night.",
+  day: "A bedroom with a Mary Oliver quote framed above the bed, an open window showing that it's day time with a tree right outside, and two shelves that hold paintbrushes, a tennis ball, a trophy, a plant, and a photo of a horse.",
+  journal: "An open journal surrounded by hearts, stars, a pencil, a question mark, and an exclamation point.",
+  riley: "A purple horse standing in an office environment with a window showing that it's daytime, painting, a whiteboard that says 'Word of the quarter: Deliver', a computer with graphs on the screen, a large plant, and a large mug of coffee that says 'World's Best Business Person'.",
+  riley_evening: "A purple horse standing in an office environment with a window showing that it's evening, painting, a whiteboard that says 'Word of the quarter: Deliver', a computer with graphs on the screen, a large plant, and a large mug of coffee that says 'World's Best Business Person'.",
+  robin: "A purple horse standing in an art studio with paintings hung on the wall, an easel with a painting that says 'The only way out is through', a house plant, and a shelf with books.",
+  river: "A purple horse standing next to palm trees on the beach, a luggage that says 'Wish U Were Here!', a road with a car driving down it, a plane soaring over mountains, and iconic landmarks from New York and Paris in the background, in the daytime.",
+  river_evening: "A purple horse standing next to palm trees on the beach, a luggage that says 'Wish U Were Here!', a road with a car driving down it, a plane soaring over mountains, and iconic landmarks from New York and Paris in the background, in the evening.",
+  rory: "A purple horse standing on clouds with hearts in the background.",
+  ronnie: "A purple horse on a tennis court, holding a tennis racquet, next to a tennis ball."
+};
+
 const EMOJI = {
   riley: "🧳",
   robin: "🎨",
@@ -347,16 +361,45 @@ async function loadAllData() {
 // -----------------------------
 // AUDIO helpers
 // -----------------------------
+function audioMix() {
+  const isMobile =
+    window.matchMedia?.("(max-width: 520px)")?.matches ||
+    /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+  return isMobile
+    ? {
+        bgmBaseVolume: 0.16,
+        bgmDuckFactor: 0.22,
+        choiceSfxVolume: 1.0,
+        clickVolume: 0.70,
+        dayVolume: 0.70,
+        finaleVolume: 0.85,
+        finalChoiceVolume: 1.0,
+      }
+    : {
+        bgmBaseVolume: 0.22,
+        bgmDuckFactor: 0.45,
+        choiceSfxVolume: 0.90,
+        clickVolume: 0.55,
+        dayVolume: 0.55,
+        finaleVolume: 0.60,
+        finalChoiceVolume: 0.80,
+      };
+}
+
 function primeAudioFromGesture() {
   if (!audioState.enabled) return;
   if (audioState.ready) return;
 
   audioState.ready = true;
+  const mix = audioMix();
+  audioState.bgmBaseVolume = mix.bgmBaseVolume;
+  audioState.bgmDuckFactor = mix.bgmDuckFactor;
+  audioState.choiceSfxVolume = mix.choiceSfxVolume;
 
   // Click SFX
   audioState.clickEl = new Audio(AUDIO_FILES.click);
   audioState.clickEl.preload = "auto";
-  audioState.clickEl.volume = 0.55;
+  audioState.clickEl.volume = mix.clickVolume;
 
   // Choice SFX (louder than BGM)
   audioState.happyEl = new Audio(AUDIO_FILES.happy);
@@ -379,25 +422,21 @@ function primeAudioFromGesture() {
   // Day start SFX
   audioState.dayEl = new Audio(AUDIO_FILES.day);
   audioState.dayEl.preload = "auto";
-  audioState.dayEl.volume = 0.55;
+  audioState.dayEl.volume = mix.dayVolume;
 
   // Ending / finale SFX
   audioState.finaleEl = new Audio(AUDIO_FILES.finale);
   audioState.finaleEl.preload = "auto";
-  audioState.finaleEl.volume = 0.60;
+  audioState.finaleEl.volume = mix.finaleVolume;
 
-  audioState.finalChoiceEl = new Audio(AUDIO_FILES.final_choice);
-  audioState.finalChoiceEl.preload = "auto";
-  audioState.finalChoiceEl.volume = 0.80;
-
-  // Final choice tone SFX (happy vs wistful)
+  // Finale choice (tone-based) SFX
   audioState.finalChoiceHappyEl = new Audio(AUDIO_FILES.finale_choice_happy);
   audioState.finalChoiceHappyEl.preload = "auto";
-  audioState.finalChoiceHappyEl.volume = 0.80;
+  audioState.finalChoiceHappyEl.volume = audioState.choiceSfxVolume;
 
   audioState.finalChoiceWistfulEl = new Audio(AUDIO_FILES.finale_choice_wistful);
   audioState.finalChoiceWistfulEl.preload = "auto";
-  audioState.finalChoiceWistfulEl.volume = 0.80;
+  audioState.finalChoiceWistfulEl.volume = audioState.choiceSfxVolume;
 
   // BGM tracks
   ["main", "riley", "robin", "river", "rory", "ronnie"].forEach((k) => {
@@ -468,10 +507,14 @@ function playFinaleSfx() {
   } catch (_) {}
 }
 
-function playFinalChoiceSfx() {
+function playFinalChoiceSfx(tone = "wistful") {
   if (!audioState.ready || !audioState.enabled) return;
-  const tone = state.endingTone || "wistful";
-  const a = (tone === "happy") ? audioState.finalChoiceHappyEl : audioState.finalChoiceWistfulEl;
+
+  const a =
+    tone === "happy"
+      ? audioState.finalChoiceHappyEl
+      : audioState.finalChoiceWistfulEl;
+
   if (!a) return;
 
   duckBgm(1100);
@@ -556,27 +599,43 @@ function resetState() {
 
   state.endIndex = 0;
   state.soulmatePick = null;
-  state.endingTone = null;
 
   stopTypewriter();
-
   lastDayStartSfxDay = null;
   finaleSfxPlayed = false;
   finalChoiceSfxPlayed = false;
 
   updateThemeForScreen();
-
-  // Do NOT auto-start BGM on reset if sound is off
   updateBgmForScreen();
 }
 
-function portraitFor(slot, partner) {
-  if (slot === "event") return IMG.horse;
-  if (slot === "transition") return IMG.day;
-  if (slot === "journal") return IMG.journal;
-  if (partner === "riley" && slot === "evening") return IMG.riley_evening;
-  if (partner === "river" && slot === "evening") return IMG.river_evening;
-  return (partner && IMG[partner]) ? IMG[partner] : IMG.horse;
+function portraitKeyFor(slot, partner, day) {
+  if (slot === "event") return "horse";
+  if (slot === "transition") return "day";
+  if (slot === "journal") return "journal";
+
+  if (!partner) {
+    if (slot === "evening" && day >= 5) return "horse_evening";
+    return "horse";
+  }
+
+  if (slot === "evening") {
+    if (partner === "riley") return "riley_evening";
+    if (partner === "river") return "river_evening";
+  }
+
+  return partner;
+}
+
+function applyPortraitKey(pKey) {
+  const key = pKey && IMG[pKey] ? pKey : "horse";
+  imgEl.src = IMG[key];
+  imgEl.alt = ALT[key] || "";
+}
+
+function portraitFor(slot, partner, day) {
+  const key = portraitKeyFor(slot, partner, day);
+  return IMG[key] || IMG.horse;
 }
 // -----------------------------
 // Rendering router
@@ -607,8 +666,7 @@ function renderCurrent() {
     }
 
     state.currentPartner = "riley";
-    imgEl.src = IMG.riley_evening;
-
+    applyPortraitKey("riley_evening");
     subtitleEl.textContent = headerText(0, "Evening with Riley");
     updateThemeForScreen();
     updateBgmForScreen();
@@ -626,7 +684,7 @@ function renderCurrent() {
   // Random Event
   if (slot === "event") {
     state.currentPartner = null;
-    imgEl.src = IMG.horse;
+    applyPortraitKey("horse");
     subtitleEl.textContent = headerText(state.day, "Random Event!");
     updateThemeForScreen();
     updateBgmForScreen();
@@ -637,8 +695,9 @@ function renderCurrent() {
   // Journal
   if (slot === "journal") {
     state.currentPartner = null;
-    imgEl.src = portraitFor("journal", null);
-    subtitleEl.textContent = headerText(state.day, "Reflection Time!");
+    const _pKey = portraitKeyFor("journal", null, state.day);
+imgEl.src = IMG[_pKey] || IMG.horse;
+imgEl.alt = ALT[_pKey] || "";subtitleEl.textContent = headerText(state.day, "Reflection Time!");
     updateThemeForScreen();
     updateBgmForScreen();
     const row = data.journals[state.day - 1];
@@ -654,7 +713,7 @@ function renderCurrent() {
     partner = state.chosenPartners[state.day][slot];
     if (!partner) {
       state.currentPartner = null;
-      imgEl.src = (slot === "evening" && state.day >= 5) ? IMG.horse_evening : IMG.horse;
+      applyPortraitKey(portraitKeyFor(slot, null, state.day));
       subtitleEl.textContent = headerText(state.day, slotTitle(slot, null));
       updateThemeForScreen();
       updateBgmForScreen();
@@ -663,8 +722,9 @@ function renderCurrent() {
   }
 
   state.currentPartner = partner;
-  imgEl.src = portraitFor(SLOTS[state.slotIndex], state.currentPartner);
-  subtitleEl.textContent = headerText(state.day, slotTitle(slot, partner));
+  const _pKey = portraitKeyFor(SLOTS[state.slotIndex], state.currentPartner, state.day);
+imgEl.src = IMG[_pKey] || IMG.horse;
+imgEl.alt = ALT[_pKey] || "";subtitleEl.textContent = headerText(state.day, slotTitle(slot, partner));
   updateThemeForScreen();
   updateBgmForScreen();
   return beginPartnerDialogue(partner);
@@ -674,8 +734,7 @@ function renderCurrent() {
 // Special screens
 // -----------------------------
 function renderLanding() {
-  imgEl.src = IMG.horse;
-
+    applyPortraitKey("horse");
   setSpeaker("");
   subtitleEl.textContent = "Seven Day Soulmate";
   setDialogue("You have seven days to choose your soulmate. Who will it be?\n\n🔈💓 Best experienced with sound on!");
@@ -692,9 +751,9 @@ function renderLanding() {
 }
 
 function renderDayTransition(day) {
-  imgEl.src = portraitFor("transition", null);
-
-  setSpeaker("");
+  const _pKey = portraitKeyFor("transition", null, state.day);
+imgEl.src = IMG[_pKey] || IMG.horse;
+imgEl.alt = ALT[_pKey] || "";setSpeaker("");
   subtitleEl.textContent = headerText(day, "");
 
   if (day >= 1 && audioState.ready && audioState.enabled && lastDayStartSfxDay !== day) {
@@ -723,8 +782,7 @@ function renderDayTransition(day) {
 }
 
 function renderDay5Info() {
-  imgEl.src = IMG.riley;
-
+  applyPortraitKey("riley");
   setSpeaker("Riley");
   subtitleEl.textContent = headerText(5, "A quick note");
   setDialogue(
@@ -772,7 +830,7 @@ function renderEnding() {
   updateThemeForScreen();
   updateBgmForScreen();
   if (personRaw.toLowerCase().includes("(you pick)")) {
-    imgEl.src = IMG.horse;
+    applyPortraitKey("horse");
     setSpeaker("");
     const ordinal = endingPickOrdinal(state.endIndex);
     setDialogue(
@@ -787,12 +845,13 @@ function renderEnding() {
     const partners = ["riley", "robin", "river", "rory", "ronnie"];
     partners.forEach((p) => {
       addChoiceButton(`${EMOJI[p]} ${DISPLAY_NAME[p]}`, () => {
-        state.soulmatePick = p;
-        state.endingTone = isPickedTopOrTied(p) ? "happy" : "wistful";
         if (ordinal >= 2 && !finalChoiceSfxPlayed && audioState.ready && audioState.enabled) {
-          playFinalChoiceSfx();
+          const tone = isPickedTopOrTied(p) ? "happy" : "wistful";
+          state.endingTone = tone;
+          playFinalChoiceSfx(tone);
           finalChoiceSfxPlayed = true;
         }
+        state.soulmatePick = p;
         state.endIndex += 1;
         renderCurrent();
       });
@@ -802,13 +861,13 @@ function renderEnding() {
 
   const key = normalizeKey(personRaw);
   if (key in IMG) {
-    imgEl.src = IMG[key];
+    applyPortraitKey(key);
     setSpeaker(DISPLAY_NAME[key]);
   } else if (key === "you") {
-    imgEl.src = IMG.horse;
+    applyPortraitKey("horse");
     setSpeaker("You");
   } else {
-    imgEl.src = IMG.horse;
+    applyPortraitKey("horse");
     setSpeaker(personRaw);
   }
 
@@ -828,8 +887,7 @@ function renderEnding() {
 
 function renderOutcome() {
   const pick = state.soulmatePick || "riley";
-  imgEl.src = IMG[pick];
-
+  applyPortraitKey(pick);
   subtitleEl.textContent = `For now, it's ${DISPLAY_NAME[pick]}.`;
   setSpeaker(DISPLAY_NAME[pick]);
 
@@ -839,12 +897,11 @@ function renderOutcome() {
   const top = highestScoreCharacter();
   const pickedIsTopOrTied = isPickedTopOrTied(pick);
 
-  state.endingTone = pickedIsTopOrTied ? "happy" : "wistful";
-
   const para = data.endParagraphs[pick] || { happy: "", middling: "", wistful: "" };
   const wistful = (data.endParagraphs[top]?.wistful || "").trim();
 
   let text = "";
+  state.endingTone = pickedIsTopOrTied ? "happy" : "wistful";
   if (pickedIsTopOrTied) {
     text = (para.happy || "").trim();
   } else {
@@ -1264,7 +1321,7 @@ function normalizeKey(s) {
 }
 
 window.addEventListener("keydown", (e) => {
-  // Shift + E
+  // Shift + E - if you want to skip to the end!
   if (e.shiftKey && e.key.toLowerCase() === "e") {
     state.mode = "ending";
     state.day = 7;
@@ -1273,9 +1330,8 @@ window.addEventListener("keydown", (e) => {
   }
 });
 
-window.addEventListener("keydown", (e) => { 
-  // Shift + 5
-  // (if you are peeking around here to see if you can skip to the open choice part of the game, here you go!)
+window.addEventListener("keydown", (e) => {
+  // Press Shift + 5 - if you want to skip to the open choices!
   if (e.shiftKey && e.code === "Digit5") {
     state.day = 5;
     state.mode = "transition";
