@@ -100,6 +100,12 @@ const audioState = {
   sfxGains: {}
 };
 
+function clamp01(v) {
+  v = Number(v);
+  if (!Number.isFinite(v)) return 0;
+  return Math.max(0, Math.min(1, v));
+}
+
 const THEME_CLASSES = ["theme-main", "theme-riley", "theme-robin", "theme-river", "theme-rory", "theme-ronnie"];
 
 function setThemeClass(themeKey) {
@@ -331,7 +337,6 @@ function bindSoundToggle() {
       return;
     }
 
-    // Turning OFF
     audioState.enabled = false;
     btn.textContent = "🔇 Sound: Off";
     btn.setAttribute("aria-pressed", "false");
@@ -370,8 +375,8 @@ function audioMix() {
     /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
   return isMobile
     ? {
-        bgmBaseVolume: 0.16,
-        bgmDuckFactor: 0.22,
+        bgmBaseVolume: 0.14,
+        bgmDuckFactor: 0.18,
         choiceSfxVolume: 1.0,
         clickVolume: 0.70,
         dayVolume: 0.70,
@@ -404,56 +409,58 @@ function primeAudioFromGesture() {
 
   audioState.clickEl = new Audio(AUDIO_FILES.click);
   audioState.clickEl.preload = "auto";
-  audioState.clickEl.volume = mix.clickVolume;
+  audioState.clickEl.volume = clamp01(mix.clickVolume);
 
   audioState.happyEl = new Audio(AUDIO_FILES.happy);
   audioState.happyEl.preload = "auto";
-  audioState.happyEl.volume = audioState.choiceSfxVolume;
+  audioState.happyEl.volume = clamp01(audioState.choiceSfxVolume * (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) ? 1.45 : 1.0));
 
   audioState.sadEl = new Audio(AUDIO_FILES.sad);
   audioState.sadEl.preload = "auto";
-  audioState.sadEl.volume = audioState.choiceSfxVolume;
+  audioState.sadEl.volume = clamp01(audioState.choiceSfxVolume * (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) ? 1.45 : 1.0));
 
   audioState.randomEventEl = new Audio(AUDIO_FILES.random_event);
   audioState.randomEventEl.preload = "auto";
-  audioState.randomEventEl.volume = audioState.choiceSfxVolume;
+  audioState.randomEventEl.volume = clamp01(audioState.choiceSfxVolume);
 
   audioState.journalEl = new Audio(AUDIO_FILES.journal);
   audioState.journalEl.preload = "auto";
-  audioState.journalEl.volume = audioState.choiceSfxVolume;
+  audioState.journalEl.volume = clamp01(audioState.choiceSfxVolume * (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) ? 1.45 : 1.0));
 
   audioState.dayEl = new Audio(AUDIO_FILES.day);
   audioState.dayEl.preload = "auto";
-  audioState.dayEl.volume = mix.dayVolume;
+  audioState.dayEl.volume = clamp01(mix.dayVolume);
 
   audioState.finaleEl = new Audio(AUDIO_FILES.finale);
   audioState.finaleEl.preload = "auto";
-  audioState.finaleEl.volume = mix.finaleVolume;
+  audioState.finaleEl.volume = clamp01(mix.finaleVolume);
 
   audioState.finalChoiceHappyEl = new Audio(AUDIO_FILES.finale_choice_happy);
   audioState.finalChoiceHappyEl.preload = "auto";
-  audioState.finalChoiceHappyEl.volume = audioState.choiceSfxVolume;
+  audioState.finalChoiceHappyEl.volume = clamp01(audioState.choiceSfxVolume);
 
   audioState.finalChoiceWistfulEl = new Audio(AUDIO_FILES.finale_choice_wistful);
   audioState.finalChoiceWistfulEl.preload = "auto";
-  audioState.finalChoiceWistfulEl.volume = audioState.choiceSfxVolume;
+  audioState.finalChoiceWistfulEl.volume = clamp01(audioState.choiceSfxVolume);
 
   try {
     const Ctx = window.AudioContext || window.webkitAudioContext;
     audioState.ctx = new Ctx();
 
     const MOBILE_SFX_BOOST =
-      /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) ? 1.8 : 1.0;
+      /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) ? 2.2 : 1.0;
+    const MOBILE_QUIET_SFX_BOOST =
+      /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) ? 1.45 : 1.0;
 
     audioState.sfxBuffers = {};
     audioState.sfxGains = {};
 
     const sfxList = {
       click: { url: AUDIO_FILES.click, gain: mix.clickVolume * MOBILE_SFX_BOOST },
-      happy: { url: AUDIO_FILES.happy, gain: audioState.choiceSfxVolume * MOBILE_SFX_BOOST },
-      sad: { url: AUDIO_FILES.sad, gain: audioState.choiceSfxVolume * MOBILE_SFX_BOOST },
+      happy: { url: AUDIO_FILES.happy, gain: audioState.choiceSfxVolume * MOBILE_SFX_BOOST * MOBILE_QUIET_SFX_BOOST },
+      sad: { url: AUDIO_FILES.sad, gain: audioState.choiceSfxVolume * MOBILE_SFX_BOOST * MOBILE_QUIET_SFX_BOOST },
       random_event: { url: AUDIO_FILES.random_event, gain: audioState.choiceSfxVolume * MOBILE_SFX_BOOST },
-      journal: { url: AUDIO_FILES.journal, gain: audioState.choiceSfxVolume * MOBILE_SFX_BOOST },
+      journal: { url: AUDIO_FILES.journal, gain: audioState.choiceSfxVolume * MOBILE_SFX_BOOST * MOBILE_QUIET_SFX_BOOST },
       day: { url: AUDIO_FILES.day, gain: mix.dayVolume * MOBILE_SFX_BOOST },
       finale: { url: AUDIO_FILES.finale, gain: mix.finaleVolume * MOBILE_SFX_BOOST },
       finale_choice_happy: { url: AUDIO_FILES.finale_choice_happy, gain: audioState.choiceSfxVolume * MOBILE_SFX_BOOST },
@@ -486,7 +493,7 @@ function primeAudioFromGesture() {
     const a = new Audio(AUDIO_FILES[k]);
     a.loop = true;
     a.preload = "auto";
-    a.volume = audioState.bgmBaseVolume;
+    a.volume = clamp01(audioState.bgmBaseVolume);
     audioState.bgmEls[k] = a;
   });
 
@@ -495,79 +502,105 @@ function primeAudioFromGesture() {
 
 function playClick() {
   if (!audioState.enabled) return;
-  const ctx = audioState.ctx;
-  const buf = audioState.sfxBuffers?.click;
-  const gain = audioState.sfxGains?.click;
-
-  if (ctx && buf && gain) {
-    try {
-      ctx.resume?.();
-      const src = ctx.createBufferSource();
-      src.buffer = buf;
-      src.connect(gain);
-      src.start(0);
-      return;
-    } catch (_) {
-    }
-  }
+  if (playSfxViaWebAudio("click")) return;
   if (!audioState.ready) return;
-  const a = audioState.clickEl;
-  if (!a) return;
+  safeResetAndPlayHtmlAudio(audioState.clickEl);
+}
+
+function safeResetAndPlayHtmlAudio(a) {
+  if (!a) return false;
   try {
+    a.pause?.();
     a.currentTime = 0;
-    a.play();
   } catch (_) {}
+  try {
+    const p = a.play();
+    if (p && typeof p.catch === "function") p.catch(() => {});
+    return true;
+  } catch (_) {
+    return false;
+  }
+}
+
+function playSfxViaWebAudio(key) {
+  const ctx = audioState.ctx;
+  const buf = audioState.sfxBuffers?.[key];
+  const gain = audioState.sfxGains?.[key];
+
+  if (!ctx || !buf || !gain) return false;
+
+  try { ctx.resume?.(); } catch (_) {}
+
+  try {
+    const src = ctx.createBufferSource();
+    src.buffer = buf;
+    src.connect(gain);
+    src.start(0);
+    return true;
+  } catch (_) {
+    return false;
+  }
 }
 
 function duckBgm(duration = 420) {
   const el = audioState.currentBgmEl;
   if (!audioState.ready || !audioState.enabled || !el) return;
-  const original = el.volume;
-  el.volume = Math.max(original * audioState.bgmDuckFactor, 0.04);
-  setTimeout(() => {
-    if (audioState.currentBgmEl === el) el.volume = original;
+
+  const base = audioState.bgmBaseVolume ?? 0.22;
+  el.volume = clamp01(Math.max(base * (audioState.bgmDuckFactor ?? 0.45), 0.04));
+
+  if (audioState._duckTimer) clearTimeout(audioState._duckTimer);
+  audioState._duckTimer = setTimeout(() => {
+    if (audioState.currentBgmEl === el) el.volume = clamp01(base);
   }, duration);
 }
 
 function playChoiceSfx(which) {
   if (!audioState.ready || !audioState.enabled) return;
+
+  if (which === "happy" && playSfxViaWebAudio("happy")) { duckBgm(420); return; }
+  if (which === "sad" && playSfxViaWebAudio("sad")) { duckBgm(420); return; }
+  if (which === "random_event" && playSfxViaWebAudio("random_event")) { duckBgm(420); return; }
+  if (which === "journal" && playSfxViaWebAudio("journal")) { duckBgm(420); return; }
+
   let a = null;
   if (which === "happy") a = audioState.happyEl;
   else if (which === "sad") a = audioState.sadEl;
   else if (which === "random_event") a = audioState.randomEventEl;
   else if (which === "journal") a = audioState.journalEl;
   if (!a) return;
+
   duckBgm(420);
-  try {
-    a.currentTime = 0;
-    a.play();
-  } catch (_) {}
+  safeResetAndPlayHtmlAudio(a);
 }
 
 function playDayStartSfx() {
   if (!audioState.ready || !audioState.enabled) return;
+
+  if (playSfxViaWebAudio("day")) { duckBgm(520); return; }
+
   const a = audioState.dayEl;
   if (!a) return;
   duckBgm(520);
-  try {
-    a.currentTime = 0;
-    a.play();
-  } catch (_) {}
+  safeResetAndPlayHtmlAudio(a);
 }
 
 function playFinaleSfx() {
   if (!audioState.ready || !audioState.enabled) return;
+
+  if (playSfxViaWebAudio("finale")) { duckBgm(900); return; }
+
   const a = audioState.finaleEl;
   if (!a) return;
   duckBgm(900);
-  try {
-    a.currentTime = 0;
-    a.play();
-  } catch (_) {}
+  safeResetAndPlayHtmlAudio(a);
 }
 
 function playFinalChoiceSfx(tone = "wistful") {
   if (!audioState.ready || !audioState.enabled) return;
+
+  const key = tone === "happy" ? "finale_choice_happy" : "finale_choice_wistful";
+  if (playSfxViaWebAudio(key)) { duckBgm(1100); return; }
 
   const a =
     tone === "happy"
@@ -577,10 +610,7 @@ function playFinalChoiceSfx(tone = "wistful") {
   if (!a) return;
 
   duckBgm(1100);
-  try {
-    a.currentTime = 0;
-    a.play();
-  } catch (_) {}
+  safeResetAndPlayHtmlAudio(a);
 }
 
 function stopBgm() {
@@ -597,9 +627,12 @@ function setBgm(key) {
   const next = audioState.bgmEls[key] || audioState.bgmEls.main;
   const nextKey = audioState.bgmEls[key] ? key : "main";
 
-  if (audioState.currentBgmKey === nextKey && audioState.currentBgmEl) return;
+  if (audioState.currentBgmKey === nextKey && audioState.currentBgmEl) {
+    audioState.currentBgmEl.volume = clamp01(audioState.bgmBaseVolume ?? audioState.currentBgmEl.volume);
+    return;
+  }
 
-  // pause old
+  // Pause old
   if (audioState.currentBgmEl) {
     try { audioState.currentBgmEl.pause(); } catch (_) {}
   }
@@ -607,8 +640,14 @@ function setBgm(key) {
   audioState.currentBgmKey = nextKey;
   audioState.currentBgmEl = next;
 
+try {
+  if (!Number.isFinite(next.currentTime) || next.currentTime < 0) next.currentTime = 0;
+} catch (_) {}
+next.volume = clamp01(audioState.bgmBaseVolume ?? next.volume);
+
   try {
-    next.play();
+    const p = next.play();
+    if (p && typeof p.catch === "function") p.catch(() => {});
   } catch (_) {}
 }
 
@@ -1394,7 +1433,7 @@ window.addEventListener("keydown", (e) => {
   if (e.shiftKey && e.code === "Digit5") {
     state.day = 5;
     state.mode = "transition";
-    state.slot = null;
+    state.slotIndex = 0;
     state.currentPartner = null;
     renderCurrent();
     console.log("Skipped to Day 5");

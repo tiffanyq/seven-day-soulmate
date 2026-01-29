@@ -151,6 +151,7 @@ body.is-resizing::before
   overflow: hidden;
   position: relative;
   z-index: 1;
+  touch-action: manipulation;
 }
 
 .game-container::before{
@@ -195,6 +196,7 @@ body.is-resizing::before
   border-radius: var(--r-md);
   background: var(--glass2);
   border: 1px solid rgba(120,140,180,0.18);
+  touch-action: manipulation;
 }
 
 .speaker{
@@ -239,7 +241,7 @@ body.is-resizing::before
   position: relative;
   text-align: left;
   cursor: pointer;
-
+  touch-action: manipulation;
   font-family: var(--font), var(--emoji);
   font-size: 18px;
   font-weight: 500;
