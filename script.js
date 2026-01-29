@@ -39,6 +39,36 @@ const ALT = {
   ronnie: "A purple horse on a tennis court, holding a tennis racquet, next to a tennis ball."
 };
 
+// ------------------
+// Image preloading
+// ------------------
+const _imgPreload = {
+  // key -> { img: Image, decoded: Promise<void> }
+  cache: new Map(),
+};
+
+function preloadImageKey(key) {
+  const k = String(key || "").trim();
+  if (!k || !IMG[k]) return null;
+  if (_imgPreload.cache.has(k)) return _imgPreload.cache.get(k);
+
+  const im = new Image();
+  try { im.decoding = "async"; } catch (_) {}
+  im.src = IMG[k];
+
+  const decoded =
+    typeof im.decode === "function" ? im.decode().catch(() => {}) : Promise.resolve();
+
+  const entry = { img: im, decoded };
+  _imgPreload.cache.set(k, entry);
+  return entry;
+}
+
+function preloadImages(keys = []) {
+  (keys || []).forEach((k) => preloadImageKey(k));
+}
+
+
 const EMOJI = {
   riley: "🧳",
   robin: "🎨",
@@ -295,6 +325,20 @@ window.addEventListener("DOMContentLoaded", async () => {
   cacheDom();
   bindSoundToggle();
   updateThemeForScreen();
+
+  preloadImages([
+    "horse",
+    "day",
+    "journal",
+    "horse_evening",
+    "riley",
+    "riley_evening",
+    "robin",
+    "river",
+    "river_evening",
+    "rory",
+    "ronnie"
+  ]);
 
   try {
     await loadAllData();
@@ -727,7 +771,18 @@ function portraitKeyFor(slot, partner, day) {
 
 function applyPortraitKey(pKey) {
   const key = pKey && IMG[pKey] ? pKey : "horse";
-  imgEl.src = IMG[key];
+  const url = IMG[key] || IMG.horse;
+
+  const entry = preloadImageKey(key);
+  if (entry && entry.decoded) {
+    entry.decoded.then(() => {
+      if (!imgEl) return;
+      if (imgEl.src !== url) imgEl.src = url;
+      imgEl.alt = ALT[key] || "";
+    });
+    return;
+  }
+  imgEl.src = url;
   imgEl.alt = ALT[key] || "";
 }
 
