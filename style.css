@@ -127,7 +127,11 @@ body.is-resizing::before
 }
 
 #page-container{
-  width: min(92vw, 700px);
+  width: min(
+    92vw,
+    700px,
+    clamp(560px, calc((100dvh - 220px) * 1.25), 700px)
+  );
   min-width: 360px;
   max-height: 100%;
   margin: 0 auto;
@@ -340,9 +344,9 @@ body.is-resizing::before
   border: 1px solid rgba(255,255,255,0.35);
   background: rgba(255,255,255,0.10);
   color: rgba(255,255,255,0.92);
-  padding: 10px 12px;
+  padding: 15px 16px;
   font-family: var(--font);
-  font-size: 14px;
+  font-size: 16px;
   cursor: pointer;
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
@@ -367,7 +371,7 @@ body.is-resizing::before
   .next-btn{ min-width: 150px; }
 
 #page-container{
-  width: min(96vw, 660px);
+  width: min(96vw, 700px);
   min-width: 360px;
   padding: 14px 12px 12px;
   gap: 14px;
@@ -431,4 +435,37 @@ html, body{ touch-action: manipulation; }
 
 @media (max-height: 680px){
   #credits{ padding-bottom: 40px; }
+}
+
+@media (max-height: 740px){
+  #game-subtitle{
+    padding: 10px 12px;
+    font-size: 15px;
+  }
+  .dialogue-box{
+    padding: 14px 16px;
+  }
+  .speaker{
+    font-size: 18px;
+    margin-bottom: 6px;
+  }
+  .dialogue{
+    font-size: 16px;
+    line-height: 1.28;
+  }
+  .choices{ gap: 7px; }
+
+  .choice-btn{
+    font-size: 16px;
+    padding: 12px 14px 12px 40px;
+    line-height: 1.28;
+  }
+  .choice-btn::before{ left: 15px; }
+
+  .next-btn{
+    min-width: 140px;
+    min-height: 48px;
+    padding: 10px 18px;
+    font-size: 14px;
+  }
 }
