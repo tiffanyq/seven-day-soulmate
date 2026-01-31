@@ -361,6 +361,13 @@ function cacheDom() {
   nextBtn = document.getElementById("nextBtn");
 }
 
+function updatePartnerSelectImageMode() {
+  const gc = document.querySelector(".game-container");
+  if (!gc) return;
+  const overflow = gc.scrollHeight > window.innerHeight;
+  gc.classList.toggle("tight-image", overflow);
+}
+
 // -----------------------------
 // Sound toggle binding (HTML button)
 // -----------------------------
@@ -802,6 +809,10 @@ function portraitFor(slot, partner, day) {
 // Rendering router
 // -----------------------------
 function renderCurrent() {
+  const gc = document.querySelector(".game-container");
+  if (gc) {
+    gc.classList.remove("is-partner-select", "tight-image");
+  }
   updateThemeForScreen();
 
   if (state.mode === "landing") { updateBgmForScreen(); return renderLanding(); }
@@ -1334,6 +1345,8 @@ function renderJournalNode(row) {
 }
 
 function renderPartnerSelect(slot) {
+  const gc = document.querySelector(".game-container");
+  if (gc) gc.classList.add("is-partner-select");
   setSpeaker("");
   setDialogue(`Who do you want to see this ${slot}?`);
   clearChoices();
@@ -1342,10 +1355,14 @@ function renderPartnerSelect(slot) {
   const partners = ["riley", "robin", "river", "rory", "ronnie"];
   partners.forEach((p) => {
     addChoiceButton(`${EMOJI[p]} ${DISPLAY_NAME[p]}`, () => {
+      if (gc) {
+        gc.classList.remove("is-partner-select", "tight-image");
+      }
       state.chosenPartners[state.day][slot] = p;
       renderCurrent();
     });
   });
+  requestAnimationFrame(updatePartnerSelectImageMode);
 }
 
 // -----------------------------

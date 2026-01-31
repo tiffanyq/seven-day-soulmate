@@ -175,6 +175,7 @@ body.is-resizing::before
   overflow: hidden;
   border: 1px solid rgba(120,140,180,0.18);
   background: rgba(255,255,255,0.60);
+  transition: aspect-ratio 180ms ease;
 }
 
 .image-box img{
@@ -359,6 +360,17 @@ body.is-resizing::before
   gap: 6px;
 }
 
+.game-container.is-partner-select.tight-image .image-box {
+  aspect-ratio: 2.8 / 1;
+}
+
+.game-container.is-partner-select.tight-image .image-box img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
 @media (max-width: 520px){
   :root{
     --page-pad: 14px;
@@ -426,7 +438,7 @@ html, body{ touch-action: manipulation; }
   #credits{ padding-bottom: 40px; }
 }
 
-@media (max-height: 740px){
+@media (max-height: 780px){
   #game-subtitle{
     padding: 10px 12px;
     font-size: 15px;
