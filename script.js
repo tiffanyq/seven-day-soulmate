@@ -895,8 +895,17 @@ imgEl.alt = ALT[_pKey] || "";subtitleEl.textContent = headerText(state.day, slot
 // Special screens
 // -----------------------------
 function renderLanding() {
-    applyPortraitKey("horse");
-
+  applyPortraitKey("horse");
+  subtitleEl.textContent = "Seven Day Soulmate";
+  speakerEl.innerHTML = `
+    <span>🧳 Riley</span>, <span>🎨 Robin</span>, <span>✈️ River</span>,
+    <span>❤️‍🩹 Rory</span>, or <span>🎾 Ronnie?</span>
+  `;
+  dialogueEl.innerHTML = `
+    You have seven days to choose your soulmate. <span>Who will it be?</span><br/>
+    <i>🔈 Best experienced with sound on!</i>
+  `;
+  stopTypewriter();
   clearChoices();
   showNext(true, "Start", () => {
     state.mode = "beginning";
