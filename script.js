@@ -231,7 +231,7 @@ function slotTitle(slot, partner) {
   const niceSlot = capitalize(slot);
   if (slot === "event") return "Random Event!";
   if (slot === "journal") return "Reflection Time!";
-  if (partner) return `${niceSlot} with ${DISPLAY_NAME[partner]}`;
+  if (partner) return `${niceSlot} Date with ${DISPLAY_NAME[partner]}`;
   return niceSlot;
 }
 
@@ -367,14 +367,23 @@ function cacheDom() {
 function bindSoundToggle() {
   const btn = document.getElementById("soundToggle");
   if (!btn) return;
-  btn.textContent = "🔇 Sound: Off";
-  btn.setAttribute("aria-pressed", "false");
+
+  const icon = btn.querySelector(".material-symbols-rounded");
+  const label = btn.querySelector(".sound-label");
+
+  function updateUI(enabled) {
+    btn.setAttribute("aria-pressed", String(enabled));
+    icon.textContent = enabled ? "music_note" : "music_off";
+    label.textContent = enabled ? "Sound: On" : "Sound: Off";
+  }
+
+  updateUI(false);
 
   btn.addEventListener("click", () => {
     if (!audioState.enabled) {
       audioState.enabled = true;
-      btn.textContent = "🔈 Sound: On";
-      btn.setAttribute("aria-pressed", "true");
+      updateUI(true);
+
       primeAudioFromGesture();
       playClick();
       updateBgmForScreen();
@@ -382,8 +391,7 @@ function bindSoundToggle() {
     }
 
     audioState.enabled = false;
-    btn.textContent = "🔇 Sound: Off";
-    btn.setAttribute("aria-pressed", "false");
+    updateUI(false);
     stopBgm();
   });
 }
@@ -820,7 +828,7 @@ function renderCurrent() {
 
     state.currentPartner = "riley";
     applyPortraitKey("riley_evening");
-    subtitleEl.textContent = headerText(0, "Evening with Riley");
+    subtitleEl.textContent = headerText(0, "Evening Date with Riley");
     updateThemeForScreen();
     updateBgmForScreen();
     return renderDialogueNodeFromRow(
@@ -888,9 +896,6 @@ imgEl.alt = ALT[_pKey] || "";subtitleEl.textContent = headerText(state.day, slot
 // -----------------------------
 function renderLanding() {
     applyPortraitKey("horse");
-  setSpeaker("");
-  subtitleEl.textContent = "Seven Day Soulmate";
-  setDialogue("You have seven days to choose your soulmate. Who will it be?\n\n🔈💓 Best experienced with sound on!");
 
   clearChoices();
   showNext(true, "Start", () => {
@@ -1123,8 +1128,15 @@ function clearChoices() {
 function showNext(show, label = "Next", onClick = null) {
   if (show) {
     nextBtn.classList.remove("hidden");
-    nextBtn.classList.add("is-hidden");
-    nextBtn.classList.remove("is-in");
+    const shouldShowNow =
+      state.mode === "landing" || !dialogueEl?.classList?.contains("typewriting");
+    if (shouldShowNow) {
+      nextBtn.classList.remove("is-hidden");
+      nextBtn.classList.add("is-in");
+    } else {
+      nextBtn.classList.add("is-hidden");
+      nextBtn.classList.remove("is-in");
+    }
     nextBtn.textContent = label;
     nextBtn.onclick = () => {
       primeAudioFromGesture();
@@ -1182,6 +1194,12 @@ function revealChoicesAndNextAfterType(token, opts = {}) {
     btn.classList.remove("is-in");
   });
 
+  requestAnimationFrame(() => {
+    if (token !== currentTypeToken) return;
+    if (!nextBtn || nextBtn.classList.contains("hidden")) return;
+    nextBtn.classList.remove("is-hidden");
+    nextBtn.classList.add("is-in");
+  });
   setTimeout(() => {
     if (token !== currentTypeToken) return;
 
@@ -1203,8 +1221,6 @@ function revealChoicesAndNextAfterType(token, opts = {}) {
     }, nextDelay);
   }, delayMs);
 }
-
-
 
 function shouldPlayDialogueChoiceSfx(kind) {
   if (kind !== "dialogue") return false;
@@ -1432,6 +1448,7 @@ function setDialogue(text) {
 }
 
 function measureFinalDialogueHeight(text) {
+  const cs = window.getComputedStyle(dialogueEl);
   const clone = dialogueEl.cloneNode(true);
   clone.classList.remove("typewriting");
   clone.style.position = "absolute";
@@ -1440,15 +1457,15 @@ function measureFinalDialogueHeight(text) {
   clone.style.height = "auto";
   clone.style.minHeight = "0";
   clone.style.maxHeight = "none";
-  clone.style.whiteSpace = "pre-line";
-  clone.textContent = text || "";
-
+  clone.style.width = `${dialogueEl.getBoundingClientRect().width}px`;
+  clone.style.whiteSpace = cs.whiteSpace;
+  clone.textContent = String(text || "").replace(/\s+$/g, "");
   dialogueEl.parentElement.appendChild(clone);
   const h = Math.ceil(clone.getBoundingClientRect().height);
   clone.remove();
-
-  const min = 32;
-  const buffer = 6;
+  const lineH = parseFloat(cs.lineHeight) || 22;
+  const buffer = Math.max(1, Math.round(lineH * 0.08));
+  const min = Math.ceil(lineH);
   return Math.max(h + buffer, min);
 }
 

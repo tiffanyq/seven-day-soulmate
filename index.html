@@ -7,11 +7,11 @@
     <meta property="og:description" content="You have seven days to choose your soulmate. Who will it be?">
     <meta property="og:image" content="img/horse.png">
     <link href="style.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20,400,0,0" />
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💘</text></svg>">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400,0,0&display=block" />
     <link rel="preload" as="image" href="img/horse.png">
     <link rel="preload" as="image" href="img/day.png">
     <link rel="preload" as="image" href="img/riley_evening.png">
@@ -20,21 +20,26 @@
   </head>
   <body>
     <div id="page-container">
-        <button id="soundToggle" type="button" aria-pressed="false">🔇 Sound: Off</button>
+        <button id="soundToggle" type="button" aria-pressed="false">
+            <span class="material-symbols-rounded" aria-label="Toggle sound">music_off</span>
+            <span class="sound-label">Sound: Off</span>
+        </button>
       <div class="game-container">
-          <div id="game-subtitle" class="titlebar">Day 0 / 7: Evening</div>
+          <div id="game-subtitle" class="titlebar">Seven Day Soulmate</div>
           <div class="image-box">
             <img src="img/horse.png" alt="A purple horse in rolling green fields, with mountains in the background, on a slightly sunny day." />
           </div>
           <div class="dialogue-box">
-              <p class="speaker" id="speaker"></p>
+              <p class="speaker" id="speaker"><span>🧳 Riley</span>, <span>🎨 Robin</span>, <span>✈️ River</span>, <span>❤️‍🩹 Rory</span>, or <span>🎾 Ronnie?</span></p>
               <p class="dialogue" id="dialogue">
+                  You have seven days to choose your soulmate. <span>Who will it be?</span><br/>
+                  <i>🔈 Best experienced with sound on!</i>
               </p>
             </div>
             <div class="footer-reserve">
               <div class="choices" id="choices"></div>
               <div class="next-row">
-                <button class="next-btn hidden" id="nextBtn">Next ▶</button>
+                <button class="next-btn" id="nextBtn">Start ▶</button>
               </div>
             </div>
         </div>
