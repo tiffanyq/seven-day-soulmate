@@ -12,17 +12,17 @@ const FILES = {
 };
 
 const IMG = {
-  riley: "img/riley.png",
-  robin: "img/robin.png",
-  river: "img/river.png",
-  rory: "img/rory.png",
-  ronnie: "img/ronnie.png",
-  horse: "img/horse.png",
-  horse_evening: "img/horse_evening.png",
-  riley_evening: "img/riley_evening.png",
-  river_evening: "img/river_evening.png",
-  day: "img/day.png",
-  journal: "img/journal.png"
+  riley: "img/riley.jpg",
+  robin: "img/robin.jpg",
+  river: "img/river.jpg",
+  rory: "img/rory.jpg",
+  ronnie: "img/ronnie.jpg",
+  horse: "img/horse.jpg",
+  horse_evening: "img/horse_evening.jpg",
+  riley_evening: "img/riley_evening.jpg",
+  river_evening: "img/river_evening.jpg",
+  day: "img/day.jpg",
+  journal: "img/journal.jpg"
 };
 
 const ALT = {
