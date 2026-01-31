@@ -367,9 +367,6 @@ body.is-resizing::before
     --credits-safe: 92px;
   }
 
-  .choice-btn{ padding: 15px 16px 15px 44px; }
-  .next-btn{ min-width: 150px; }
-
 #page-container{
   width: min(96vw, 700px);
   min-width: 360px;
@@ -399,7 +396,7 @@ body.is-resizing::before
 
 .choice-btn{
   font-size: 16px;
-  padding: 12px 14px 12px 14px;
+  padding: 14px 14px 14px 14px;
   line-height: 1.28;
 }
 
@@ -449,7 +446,7 @@ html, body{ touch-action: manipulation; }
 
   .choice-btn{
     font-size: 16px;
-    padding: 12px 14px 12px 14px;
+    padding: 14px 14px 14px 14px;
     line-height: 1.28;
   }
 

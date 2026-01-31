@@ -1512,6 +1512,14 @@ window.addEventListener("keydown", (e) => {
 window.addEventListener("keydown", (e) => {
   // Press Shift + 5 - if you want to skip to the open choices!
   if (e.shiftKey && e.code === "Digit5") {
+    state.dialogueIndex = {
+      riley: 4,
+      robin: 2,
+      river: 2,
+      rory: 2,
+      ronnie: 2,
+    };
+    state.beginningIndex = data.beginning?.length ?? state.beginningIndex;
     state.day = 5;
     state.mode = "transition";
     state.slotIndex = 0;
