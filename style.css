@@ -416,7 +416,7 @@ body.is-resizing::before
   min-width: 140px;
   min-height: 48px;
   padding: 10px 18px;
-  font-size: 14px;
+  font-size: 16px;
 }
 
 #soundToggle{
@@ -466,6 +466,6 @@ html, body{ touch-action: manipulation; }
     min-width: 140px;
     min-height: 48px;
     padding: 10px 18px;
-    font-size: 14px;
+    font-size: 16px;
   }
 }
