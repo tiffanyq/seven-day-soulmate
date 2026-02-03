@@ -908,6 +908,7 @@ imgEl.alt = ALT[_pKey] || "";subtitleEl.textContent = headerText(state.day, slot
 function renderLanding() {
   applyPortraitKey("horse");
   subtitleEl.textContent = "Seven Day Soulmate";
+  dialogueEl.style.minHeight = "";
   speakerEl.innerHTML = `
     <span>🧳 Riley</span>, <span>🎨 Robin</span>, <span>✈️ River</span>,
     <span>❤️‍🩹 Rory</span>, or <span>🎾 Ronnie?</span>
