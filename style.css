@@ -272,6 +272,7 @@ body.is-resizing::before
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  user-select: none;
   min-width: 170px;
   min-height: 52px;
   padding: 14px 22px;

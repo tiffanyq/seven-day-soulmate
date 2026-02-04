@@ -1023,7 +1023,12 @@ function renderEnding() {
 
     const partners = ["riley", "robin", "river", "rory", "ronnie"];
     partners.forEach((p) => {
-      addChoiceButton(`${EMOJI[p]} ${DISPLAY_NAME[p]}`, () => {
+      const label =
+        ordinal >= 2
+          ? `${EMOJI[p]} You (${DISPLAY_NAME[p]})`
+          : `${EMOJI[p]} ${DISPLAY_NAME[p]}`;
+
+      addChoiceButton(label, () => {
         if (ordinal >= 2 && !finalChoiceSfxPlayed && audioState.ready && audioState.enabled) {
           const tone = isPickedTopOrTied(p) ? "happy" : "wistful";
           state.endingTone = tone;
