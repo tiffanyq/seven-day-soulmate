@@ -186,6 +186,7 @@ const state = {
   endIndex: 0,
   soulmatePick: null,
   endingTone: null, // "happy" | "wistful"
+  endingYouSpeakerRemaining: 0, // for you styling in end sequence
 };
 
 const data = {
@@ -756,6 +757,8 @@ function resetState() {
 
   state.endIndex = 0;
   state.soulmatePick = null;
+  state.endingTone = null;
+  state.endingYouSpeakerRemaining = 0;
 
   stopTypewriter();
   lastDayStartSfxDay = null;
@@ -1000,6 +1003,18 @@ function renderEnding() {
   const personRaw = (row["Person"] || "").trim();
   const dialogueRaw = (row["Dialogue"] || "").trim();
 
+  const ENDING_YOU_START =
+    "Look, Robbie, you've been so indecisive about what you want in life.";
+  const pKeyForEnding = normalizeKey(personRaw);
+
+  if (
+    state.endingYouSpeakerRemaining === 0 &&
+    pKeyForEnding === "riley" &&
+    dialogueRaw.startsWith(ENDING_YOU_START)
+  ) {
+    state.endingYouSpeakerRemaining = 6;
+  }
+
   if (!finaleSfxPlayed && audioState.ready && audioState.enabled && state.endIndex === 0) {
     playFinaleSfx();
     finaleSfxPlayed = true;
@@ -1009,6 +1024,7 @@ function renderEnding() {
   updateThemeForScreen();
   updateBgmForScreen();
   if (personRaw.toLowerCase().includes("(you pick)")) {
+    state.endingYouSpeakerRemaining = 0;
     applyPortraitKey("horse");
     setSpeaker("");
     const ordinal = endingPickOrdinal(state.endIndex);
@@ -1046,7 +1062,12 @@ function renderEnding() {
   const key = normalizeKey(personRaw);
   if (key in IMG) {
     applyPortraitKey(key);
-    setSpeaker(DISPLAY_NAME[key]);
+    if (state.endingYouSpeakerRemaining > 0 && EMOJI[key] && DISPLAY_NAME[key]) {
+      setSpeaker(`${EMOJI[key]} You (${DISPLAY_NAME[key]})`);
+      state.endingYouSpeakerRemaining -= 1;
+    } else {
+      setSpeaker(DISPLAY_NAME[key]);
+    }
   } else if (key === "you") {
     applyPortraitKey("horse");
     setSpeaker("You");
