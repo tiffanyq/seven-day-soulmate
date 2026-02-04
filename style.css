@@ -409,7 +409,7 @@ body.is-resizing::before
 
 .choice-btn{
   font-size: 16px;
-  padding: 14px 14px 14px 14px;
+  padding: 16px 14px 16px 14px;
   line-height: 1.28;
 }
 
