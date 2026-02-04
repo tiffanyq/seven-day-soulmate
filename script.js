@@ -945,11 +945,11 @@ imgEl.alt = ALT[_pKey] || "";setSpeaker("");
 
   let text;
   switch (day) {
-    case 1: text = "Seven more days."; break;
+    case 1: text = "Happy Monday! Seven more days."; break;
     case 2: text = "Six more days."; break;
     case 3: text = "The days are starting to fly by."; break;
-    case 4: text = "You're halfway there..."; break;
-    case 5: text = "You're overly aware you have three more days."; break;
+    case 4: text = "You're overly aware you have four more days."; break;
+    case 5: text = "Happy Friday! Three more days. Enjoy your long weekend!"; break;
     case 6: text = "The end is creeping up on you."; break;
     case 7: text = "One more day!!!"; break;
     default: text = "";
