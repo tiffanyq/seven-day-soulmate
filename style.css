@@ -82,7 +82,8 @@ body{
   text-rendering: optimizeLegibility;
   display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: flex-start;
+  padding-top: 24px;
   overflow-y: auto;
   overflow-x: hidden;
   position: relative;
