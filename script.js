@@ -204,7 +204,7 @@ let speakerEl, dialogueEl, subtitleEl, imgEl, choicesEl, nextBtn;
 // Emoji stamps on date choices
 // -----------------------------
 const MIN_EMOJI_SIZE = 10;
-const EMOJI_MULTIPLIER = 28;
+const EMOJI_MULTIPLIER = 36;
 
 function stampEmojiBurst(emojiChar, opts = {}) {
   const count = Number.isFinite(opts.count) ? opts.count : 24;
@@ -1190,8 +1190,6 @@ function renderEnding() {
 function renderOutcome() {
   const pick = state.soulmatePick || "riley";
   applyPortraitKey(pick);
-  subtitleEl.textContent = `For now, it's ${DISPLAY_NAME[pick]}.`;
-  setSpeaker(DISPLAY_NAME[pick]);
 
   updateThemeForScreen();
   updateBgmForScreen();
@@ -1199,11 +1197,20 @@ function renderOutcome() {
   const top = highestScoreCharacter();
   const pickedIsTopOrTied = isPickedTopOrTied(pick);
 
+  state.endingTone = pickedIsTopOrTied ? "happy" : "wistful";
+
+  if (state.endingTone === "happy") {
+    subtitleEl.textContent = `For now, it's ${DISPLAY_NAME[pick]} ❤️`;
+  } else {
+    subtitleEl.textContent = `For now, it's ${DISPLAY_NAME[pick]}...?`;
+  }
+
+  setSpeaker(DISPLAY_NAME[pick]);
+
   const para = data.endParagraphs[pick] || { happy: "", middling: "", wistful: "" };
   const wistful = (data.endParagraphs[top]?.wistful || "").trim();
 
   let text = "";
-  state.endingTone = pickedIsTopOrTied ? "happy" : "wistful";
   if (pickedIsTopOrTied) {
     text = (para.happy || "").trim();
   } else {
@@ -1213,6 +1220,15 @@ function renderOutcome() {
   }
 
   setDialogue(text);
+
+  try {
+    const burstEmoji = state.endingTone === "happy" ? "❤️" : "❔";
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        stampEmojiBurst(burstEmoji, { count: 48, fadeMs: 3500, floatUpPx: 40 });
+      });
+    });
+  } catch (_) {}
 
   clearChoices();
   showNext(false);
