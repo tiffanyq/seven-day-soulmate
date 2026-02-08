@@ -200,6 +200,74 @@ const data = {
 
 let speakerEl, dialogueEl, subtitleEl, imgEl, choicesEl, nextBtn;
 
+// -----------------------------
+// Emoji stamps on date choices
+// -----------------------------
+const MIN_EMOJI_SIZE = 10;
+const EMOJI_MULTIPLIER = 28;
+
+function stampEmojiBurst(emojiChar, opts = {}) {
+  const count = Number.isFinite(opts.count) ? opts.count : 24;
+  const fadeMs = Number.isFinite(opts.fadeMs) ? opts.fadeMs : 2000;
+
+  if (!imgEl) return;
+  const rect = imgEl.getBoundingClientRect();
+  if (!rect || rect.width <= 0 || rect.height <= 0) return;
+
+  const body = document.body;
+  for (let i = 0; i < count; i++) {
+    const size = MIN_EMOJI_SIZE + Math.floor(Math.random() * EMOJI_MULTIPLIER);
+
+    const pad = Math.max(8, Math.floor(size * 0.6));
+    const x = rect.left + pad + Math.random() * Math.max(1, rect.width - pad * 2);
+    const y = rect.top + pad + Math.random() * Math.max(1, rect.height - pad * 2);
+
+    const el = document.createElement("div");
+    el.textContent = emojiChar;
+    el.style.position = "fixed";
+    el.style.left = `${x}px`;
+    el.style.top = `${y}px`;
+    el.style.transform = "translate(-50%, -50%)";
+    el.style.fontSize = `${size}px`;
+    el.style.lineHeight = "1";
+    el.style.userSelect = "none";
+    el.style.pointerEvents = "none";
+    el.style.zIndex = "9999";
+    body.appendChild(el);
+
+    try {
+      const floatUpPx = opts.floatUpPx ?? 30;
+      el.animate(
+        [
+          {
+            opacity: 1,
+            transform: "translate(-50%, -50%) scale(1)"
+          },
+          {
+            opacity: 0,
+            transform: `translate(-50%, calc(-50% - ${floatUpPx}px)) scale(1.15)`
+          }
+        ],
+        {
+          duration: fadeMs,
+          easing: "ease-out",
+          fill: "forwards"
+        }
+      );
+    } catch (_) {}
+
+    setTimeout(() => el.remove(), fadeMs + 50);
+  }
+}
+
+function shouldStampDateChoice(kind) {
+  if (kind !== "dialogue") return false;
+  if (state.mode !== "day") return false;
+  if (!Number.isFinite(state.day) || state.day < 1 || state.day > 7) return false;
+  const slot = SLOTS[state.slotIndex];
+  return slot === "morning" || slot === "afternoon" || slot === "evening";
+}
+
 let typeTimer = null;
 let currentTypeToken = 0;
 let lastDayStartSfxDay = null;
@@ -1324,6 +1392,7 @@ function renderDialogueNodeFromRow(kind, row, partnerOverride = null) {
   addChoiceButton(opt1, () => {
     if (kind === "dialogue") state.scores[partner] += 1;
     if (shouldPlayDialogueChoiceSfx(kind)) playChoiceSfx("happy");
+    if (typeof stampEmojiBurst === "function" && shouldStampDateChoice(kind)) stampEmojiBurst("❤️", { count: 36, fadeMs: 2000 });
 
     renderResponseScreenLabel(DISPLAY_NAME[partner], resp1, () => {
       if (kind === "beginning") state.beginningIndex += 1;
@@ -1335,6 +1404,7 @@ function renderDialogueNodeFromRow(kind, row, partnerOverride = null) {
   addChoiceButton(opt2, () => {
     if (kind === "dialogue") state.scores[partner] -= 1;
     if (shouldPlayDialogueChoiceSfx(kind)) playChoiceSfx("sad");
+    if (typeof stampEmojiBurst === "function" && shouldStampDateChoice(kind)) stampEmojiBurst("😢", { count: 36, fadeMs: 2000 });
 
     renderResponseScreenLabel(DISPLAY_NAME[partner], resp2, () => {
       if (kind === "beginning") state.beginningIndex += 1;
