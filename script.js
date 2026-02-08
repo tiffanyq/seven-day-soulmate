@@ -218,16 +218,23 @@ function stampEmojiBurst(emojiChar, opts = {}) {
   for (let i = 0; i < count; i++) {
     const size = MIN_EMOJI_SIZE + Math.floor(Math.random() * EMOJI_MULTIPLIER);
 
-    const pad = Math.max(8, Math.floor(size * 0.6));
-    const x = rect.left + pad + Math.random() * Math.max(1, rect.width - pad * 2);
-    const y = rect.top + pad + Math.random() * Math.max(1, rect.height - pad * 2);
+    const padX = Math.max(8, Math.floor(size * 0.6));
+    const padTop = Math.max(8, Math.floor(size * 0.6));
+    const padBottom = 2;
+    const x = rect.left + padX + Math.random() * Math.max(1, rect.width - padX * 2);
+    const t = Math.random();
+    const biasedT = 1 - (1 - t) * (1 - t);
+    const y =
+      rect.top +
+      padTop +
+      biasedT * Math.max(1, rect.height - padTop - padBottom);
 
     const el = document.createElement("div");
     el.textContent = emojiChar;
     el.style.position = "fixed";
     el.style.left = `${x}px`;
     el.style.top = `${y}px`;
-    el.style.transform = "translate(-50%, -50%)";
+    el.style.transform = "translate(-50%, -100%)";
     el.style.fontSize = `${size}px`;
     el.style.lineHeight = "1";
     el.style.userSelect = "none";
@@ -241,11 +248,11 @@ function stampEmojiBurst(emojiChar, opts = {}) {
         [
           {
             opacity: 1,
-            transform: "translate(-50%, -50%) scale(1)"
+            transform: "translate(-50%, -100%) scale(1)"
           },
           {
             opacity: 0,
-            transform: `translate(-50%, calc(-50% - ${floatUpPx}px)) scale(1.15)`
+            transform: `translate(-50%, calc(-100% - ${floatUpPx}px)) scale(1.15)`
           }
         ],
         {
@@ -1392,7 +1399,7 @@ function renderDialogueNodeFromRow(kind, row, partnerOverride = null) {
   addChoiceButton(opt1, () => {
     if (kind === "dialogue") state.scores[partner] += 1;
     if (shouldPlayDialogueChoiceSfx(kind)) playChoiceSfx("happy");
-    if (typeof stampEmojiBurst === "function" && shouldStampDateChoice(kind)) stampEmojiBurst("❤️", { count: 36, fadeMs: 2000 });
+    if (typeof stampEmojiBurst === "function" && shouldStampDateChoice(kind)) stampEmojiBurst("❤️", { count: 24, fadeMs: 2000 });
 
     renderResponseScreenLabel(DISPLAY_NAME[partner], resp1, () => {
       if (kind === "beginning") state.beginningIndex += 1;
@@ -1404,7 +1411,7 @@ function renderDialogueNodeFromRow(kind, row, partnerOverride = null) {
   addChoiceButton(opt2, () => {
     if (kind === "dialogue") state.scores[partner] -= 1;
     if (shouldPlayDialogueChoiceSfx(kind)) playChoiceSfx("sad");
-    if (typeof stampEmojiBurst === "function" && shouldStampDateChoice(kind)) stampEmojiBurst("😢", { count: 36, fadeMs: 2000 });
+    if (typeof stampEmojiBurst === "function" && shouldStampDateChoice(kind)) stampEmojiBurst("😢", { count: 24, fadeMs: 2000 });
 
     renderResponseScreenLabel(DISPLAY_NAME[partner], resp2, () => {
       if (kind === "beginning") state.beginningIndex += 1;
