@@ -229,17 +229,39 @@ function fixedPartnerFor(day, slot) {
 // Header text formatting
 // -----------------------------
 function slotTitle(slot, partner) {
-  const niceSlot = capitalize(slot);
-  if (slot === "event") return "Random Event!";
-  if (slot === "journal") return "Reflection Time!";
-  if (partner) return `${niceSlot} Date with ${DISPLAY_NAME[partner]}`;
-  return niceSlot;
+  if (slot === "event") return "Random Event";
+  if (slot === "journal") return "Reflection Time";
+  if (partner) return `Date with ${DISPLAY_NAME[partner]}`;
+  return "";
 }
 
 function headerText(day, title) {
   const base = `Day ${day}/7`;
   if (!title || title.trim() === "") return base;
   return `${base} - ${title}`;
+}
+
+const SLOT_TIME = {
+  morning: "7:00AM",
+  afternoon: "1:00PM",
+  event: "5:00PM",
+  evening: "9:00PM",
+  journal: "11:00PM",
+};
+
+function headerTextTimed(day, slot, title) {
+  const timePart = SLOT_TIME[slot] || "";
+  const dayPart = `Day ${day}/7`;
+  const cleanTitle = (title || "").trim();
+
+  // Format:
+  // X:XX XX • Day X/7 - [Event]
+  if (timePart && cleanTitle) return `${timePart} • ${dayPart} - ${cleanTitle}`;
+  if (timePart) return `${timePart} • ${dayPart}`;
+
+  // Fallback (transition/finale/etc.)
+  if (cleanTitle) return `${dayPart} - ${cleanTitle}`;
+  return dayPart;
 }
 
 // -----------------------------
@@ -842,7 +864,7 @@ function renderCurrent() {
 
     state.currentPartner = "riley";
     applyPortraitKey("riley_evening");
-    subtitleEl.textContent = headerText(0, "Evening Date with Riley");
+    subtitleEl.textContent = headerTextTimed(0, "evening", "Date with Riley");
     updateThemeForScreen();
     updateBgmForScreen();
     return renderDialogueNodeFromRow(
@@ -860,7 +882,7 @@ function renderCurrent() {
   if (slot === "event") {
     state.currentPartner = null;
     applyPortraitKey("horse");
-    subtitleEl.textContent = headerText(state.day, "Random Event!");
+    subtitleEl.textContent = headerTextTimed(state.day, "event", "Random Event");
     updateThemeForScreen();
     updateBgmForScreen();
     const row = data.events[state.day - 1];
@@ -872,7 +894,7 @@ function renderCurrent() {
     state.currentPartner = null;
     const _pKey = portraitKeyFor("journal", null, state.day);
 imgEl.src = IMG[_pKey] || IMG.horse;
-imgEl.alt = ALT[_pKey] || "";subtitleEl.textContent = headerText(state.day, "Reflection Time!");
+imgEl.alt = ALT[_pKey] || "";subtitleEl.textContent = headerTextTimed(state.day, "journal", "Reflection Time");
     updateThemeForScreen();
     updateBgmForScreen();
     const row = data.journals[state.day - 1];
@@ -889,7 +911,7 @@ imgEl.alt = ALT[_pKey] || "";subtitleEl.textContent = headerText(state.day, "Ref
     if (!partner) {
       state.currentPartner = null;
       applyPortraitKey(portraitKeyFor(slot, null, state.day));
-      subtitleEl.textContent = headerText(state.day, slotTitle(slot, null));
+      subtitleEl.textContent = headerText(state.day, "Who to see?");
       updateThemeForScreen();
       updateBgmForScreen();
       return renderPartnerSelect(slot);
@@ -899,7 +921,7 @@ imgEl.alt = ALT[_pKey] || "";subtitleEl.textContent = headerText(state.day, "Ref
   state.currentPartner = partner;
   const _pKey = portraitKeyFor(SLOTS[state.slotIndex], state.currentPartner, state.day);
 imgEl.src = IMG[_pKey] || IMG.horse;
-imgEl.alt = ALT[_pKey] || "";subtitleEl.textContent = headerText(state.day, slotTitle(slot, partner));
+imgEl.alt = ALT[_pKey] || "";subtitleEl.textContent = headerTextTimed(state.day, slot, slotTitle(slot, partner));
   updateThemeForScreen();
   updateBgmForScreen();
   return beginPartnerDialogue(partner);
@@ -949,7 +971,7 @@ imgEl.alt = ALT[_pKey] || "";setSpeaker("");
     case 2: text = "Six more days."; break;
     case 3: text = "The days are starting to fly by."; break;
     case 4: text = "You're overly aware you have four more days."; break;
-    case 5: text = "Happy Friday! Three more days. Enjoy your long weekend!"; break;
+    case 5: text = "Happy Friday! Enjoy your long weekend."; break;
     case 6: text = "The end is creeping up on you."; break;
     case 7: text = "One more day!!!"; break;
     default: text = "";
