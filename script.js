@@ -445,7 +445,7 @@ window.addEventListener("DOMContentLoaded", async () => {
     console.error(err);
     speakerEl.textContent = "Error";
     dialogueEl.textContent =
-      "Could not load CSV data. Check console + filenames in FILES.";
+      "Could not load game. Please try refreshing the page.";
     showNext(false);
   }
 });
