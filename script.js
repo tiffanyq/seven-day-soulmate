@@ -70,7 +70,7 @@ function preloadImages(keys = []) {
 
 
 const EMOJI = {
-  riley: "🧳",
+  riley: "👔",
   robin: "🎨",
   river: "✈️",
   rory: "❤️‍🩹",
@@ -1010,7 +1010,7 @@ function renderLanding() {
   subtitleEl.textContent = "Seven Day Soulmate";
   dialogueEl.style.minHeight = "";
   speakerEl.innerHTML = `
-    <span>🧳 Riley</span>, <span>🎨 Robin</span>, <span>✈️ River</span>,
+    <span>👔 Riley</span>, <span>🎨 Robin</span>, <span>✈️ River</span>,
     <span>❤️‍🩹 Rory</span>, or <span>🎾 Ronnie?</span>
   `;
   dialogueEl.innerHTML = `
@@ -1101,7 +1101,7 @@ function renderEnding() {
   const dialogueRaw = (row["Dialogue"] || "").trim();
 
   const ENDING_YOU_START =
-    "Look, Robbie, you've been so indecisive about what you want in life.";
+    "Robbie, you've been so indecisive about what you want in life.";
   const pKeyForEnding = normalizeKey(personRaw);
 
   if (
@@ -1109,7 +1109,7 @@ function renderEnding() {
     pKeyForEnding === "riley" &&
     dialogueRaw.startsWith(ENDING_YOU_START)
   ) {
-    state.endingYouSpeakerRemaining = 6;
+    state.endingYouSpeakerRemaining = 7;
   }
 
   if (!finaleSfxPlayed && audioState.ready && audioState.enabled && state.endIndex === 0) {
@@ -1138,7 +1138,7 @@ function renderEnding() {
     partners.forEach((p) => {
       const label =
         ordinal >= 2
-          ? `${EMOJI[p]} You (${DISPLAY_NAME[p]})`
+          ? `${EMOJI[p]} ${DISPLAY_NAME[p]}`
           : `${EMOJI[p]} ${DISPLAY_NAME[p]}`;
 
       addChoiceButton(label, () => {
@@ -1160,7 +1160,7 @@ function renderEnding() {
   if (key in IMG) {
     applyPortraitKey(key);
     if (state.endingYouSpeakerRemaining > 0 && EMOJI[key] && DISPLAY_NAME[key]) {
-      setSpeaker(`${EMOJI[key]} You (${DISPLAY_NAME[key]})`);
+      setSpeaker(`${EMOJI[key]} ${DISPLAY_NAME[key]}`);
       state.endingYouSpeakerRemaining -= 1;
     } else {
       setSpeaker(DISPLAY_NAME[key]);
